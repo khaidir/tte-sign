@@ -122,12 +122,26 @@ pki-architectures:
             value: !!set
               key_cert_sign: null
               crl_sign: null
+          - id: crl_distribution_points
+            critical: false
+            smart_value:
+              schema: crl-dist-url
+              params:
+                crl-repo-names:
+                  - psre-ca
+          - id: authority_information_access
+            critical: false
+            smart_value:
+              schema: aia-urls
+              params:
+                ocsp-responder-names:
+                  - psre-ca
 
       # ── Signer: Valid ────────────────────────────────────────────────────
       signer-valid:
         subject: signer-valid
         issuer: psre-ca
-        subject-key: signer-valid 
+        subject-key: signer-valid
         authority-key: psre-ca
         validity:
           valid_from: '2025-01-01T00:00:00Z'

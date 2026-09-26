@@ -60,7 +60,7 @@
 - [x] Fixture pytest: server mock TSA/OCSP/CRL lokal
 - [x] Generator PDF fixture (Lampiran D) + `make fixtures`
 - [x] `dev/trust/` berisi root uji untuk pengembangan lokal
-- — catatan: certomancer 0.14.x API (`Animator` + `AnimatorArchStore`); `pem.armor()` untuk ekspor PEM; `package_pkcs12(password=)`; raw PDF string manipulation untuk JS injection; Pillow decompression bomb diatasi dgn baca raw PNG header; 50/50 test lulus
+- — catatan: certomancer 0.14.x API (`Animator` + `AnimatorArchStore`); `pem.armor()` untuk ekspor PEM; `package_pkcs12(password=)`; raw PDF string manipulation untuk JS injection; Pillow decompression bomb diatasi dgn baca raw PNG header; 50/50 test lulus; CRLDP & AIA via smart_value plugin (`crl-dist-url`, `aia-urls`); keys & trust PEM di-untrack dari git (`.gitignore`); `subject_key_identifier` bukan nama OID valid — pakai `key_identifier`
 
 ## P04 — Backend: dokumen
 
