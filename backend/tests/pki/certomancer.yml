@@ -81,7 +81,7 @@ pki-architectures:
         organization_name: UJI — TIDAK UNTUK PRODUKSI
 
     certs:
-      # ── Root CA ──────────────────────────────────────────────────────────
+      # Root CA
       tte-test-root:
         subject: tte-test-root
         issuer: tte-test-root
@@ -102,7 +102,7 @@ pki-architectures:
               key_cert_sign: null
               crl_sign: null
 
-      # ── Intermediate CA ──────────────────────────────────────────────────
+      # Intermediate CA
       psre-ca:
         subject: psre-ca
         issuer: tte-test-root
@@ -137,7 +137,7 @@ pki-architectures:
                 ocsp-responder-names:
                   - psre-ca
 
-      # ── Signer: Valid ────────────────────────────────────────────────────
+      # Signer: Valid
       signer-valid:
         subject: signer-valid
         issuer: psre-ca
@@ -153,7 +153,7 @@ pki-architectures:
               digital_signature: null
               non_repudiation: null
 
-      # ── Signer: ECDSA ────────────────────────────────────────────────────
+      # Signer: ECDSA
       signer-ecdsa:
         subject: signer-ecdsa
         issuer: psre-ca
@@ -169,7 +169,7 @@ pki-architectures:
               digital_signature: null
               non_repudiation: null
 
-      # ── Signer: Expired ──────────────────────────────────────────────────
+      # Signer: Expired
       signer-expired:
         subject: signer-expired
         issuer: psre-ca
@@ -185,7 +185,7 @@ pki-architectures:
               digital_signature: null
               non_repudiation: null
 
-      # ── Signer: Not Yet Valid ────────────────────────────────────────────
+      # Signer: Not Yet Valid
       signer-notyet:
         subject: signer-notyet
         issuer: psre-ca
@@ -201,7 +201,7 @@ pki-architectures:
               digital_signature: null
               non_repudiation: null
 
-      # ── Signer: Revoked ──────────────────────────────────────────────────
+      # Signer: Revoked
       signer-revoked:
         subject: signer-revoked
         issuer: psre-ca
@@ -219,7 +219,7 @@ pki-architectures:
         revocation:
           revoked_since: '2025-01-01T00:00:00Z'
 
-      # ── Signer: No Key Usage ─────────────────────────────────────────────
+      # Signer: No Key Usage
       signer-nokeyusage:
         subject: signer-nokeyusage
         issuer: psre-ca
@@ -234,7 +234,7 @@ pki-architectures:
             value: !!set
               key_encipherment: null
 
-      # ── Server Seal ──────────────────────────────────────────────────────
+      # Server Seal
       server-seal:
         subject: server-seal
         issuer: psre-ca
@@ -250,7 +250,7 @@ pki-architectures:
               digital_signature: null
               non_repudiation: null
 
-      # ── TSA ──────────────────────────────────────────────────────────────
+      # TSA
       tsa:
         subject: tsa
         issuer: psre-ca
@@ -269,7 +269,7 @@ pki-architectures:
             value: !!set
               time_stamping: null
 
-      # ── OCSP Responder ───────────────────────────────────────────────────
+      # OCSP Responder
       ocsp:
         subject: ocsp
         issuer: psre-ca
@@ -288,7 +288,7 @@ pki-architectures:
             value: !!set
               ocsp_signing: null
 
-      # ── Untrusted Root ───────────────────────────────────────────────────
+      # Untrusted Root
       untrusted-root:
         subject: untrusted-root
         issuer: untrusted-root
@@ -309,7 +309,7 @@ pki-architectures:
               key_cert_sign: null
               crl_sign: null
 
-      # ── Untrusted Signer ─────────────────────────────────────────────────
+      # Untrusted Signer
       signer-untrusted:
         subject: signer-untrusted
         issuer: untrusted-root

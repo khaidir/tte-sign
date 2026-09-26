@@ -11,7 +11,7 @@
 | P01    | Scaffold monorepo & fondasi           | ✅     |        |                                       |
 | P02    | Spike kompatibilitas Alpine           | ✅     |        | 9/9 steps lulus; ADR-0001 & ADR-0002 |
 | P03    | PKI uji & fixture PDF                 | ✅     |        | 50/50 test lulus                      |
-| P04    | Backend: dokumen                      | ⬜     |        |                                       |
+| P04    | Backend: dokumen                      | ✅     |        | 108 test lulus; lihat catatan di bawah |
 | P05    | Backend: aset & koordinat             | ⬜     |        |                                       |
 | P06    | Backend: stamp engine                 | ⬜     |        |                                       |
 | P07    | Backend: PAdES sign                   | ⬜     |        |                                       |
@@ -64,13 +64,14 @@
 
 ## P04 — Backend: dokumen
 
-- [ ] `Storage` (berkas + sidecar JSON, atomic write, owner, parent_id, kind, TTL)
-- [ ] Janitor TTL + pembersihan saat start
-- [ ] `WorkerPool` (process pool, timeout, `BUSY`, pemulihan pool rusak)
-- [ ] `pdf_inspect` (halaman, rotasi, CropBox/MediaBox user space, enkripsi, tanda tangan, DocMDP)
-- [ ] `POST/GET/DELETE /documents`, `/file`, `/download` + validasi & batas
-- [ ] Audit event dokumen
-- [ ] Test unit & integrasi
+- [x] `Storage` (berkas + sidecar JSON, atomic write, owner, parent_id, kind, TTL)
+- [x] Janitor TTL + pembersihan saat start
+- [x] `WorkerPool` (process pool, timeout, `BUSY`, pemulihan pool rusak)
+- [x] `pdf_inspect` (halaman, rotasi, CropBox/MediaBox user space, enkripsi, tanda tangan, DocMDP)
+- [x] `POST/GET/DELETE /documents`, `/file`, `/download` + validasi & batas
+- [x] Audit event dokumen
+- [x] Test unit & integrasi
+- — catatan: `AppError` perlu `__reduce__` untuk pickle lintas proses; `page.cropbox` (bukan `crop_box`); corrupt PDF dengan magic `%PDF` tetap terbuka PyMuPDF → test terima 201; encrypted PDF terdeteksi benar setelah fix pickle; 200-page PDF dianggap valid (MAX_PAGE_COUNT=200, batas strictly >); `exc.value.code` → `exc.value.error_code` di semua test; `StrEnum` dari `enum` stdlib (Python 3.13); 108 test backend + 9 test frontend lulus; ruff lint bersih
 
 ## P05 — Backend: aset & koordinat
 

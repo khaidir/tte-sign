@@ -87,6 +87,16 @@ class AppError(Exception):
         self.instance = instance
         super().__init__(self.detail)
 
+    def __str__(self) -> str:
+        return self.detail
+
+    def __reduce__(self) -> tuple:
+        """Support pickling across process boundaries."""
+        return (
+            self.__class__,
+            (self.error_code, self.detail, self.extra, self.instance),
+        )
+
 
 def _problem_response(
     status: int,
