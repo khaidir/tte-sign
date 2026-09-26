@@ -10,7 +10,7 @@
 | P00    | PRD, PLAN, TODO, prompt               | ✅     | —      | Dokumen perencanaan dibuat 26-09-2026 |
 | P01    | Scaffold monorepo & fondasi           | ✅     |        |                                       |
 | P02    | Spike kompatibilitas Alpine           | ✅     |        | 9/9 steps lulus; ADR-0001 & ADR-0002 |
-| P03    | PKI uji & fixture PDF                 | ⬜     |        |                                       |
+| P03    | PKI uji & fixture PDF                 | ✅     |        | 50/50 test lulus                      |
 | P04    | Backend: dokumen                      | ⬜     |        |                                       |
 | P05    | Backend: aset & koordinat             | ⬜     |        |                                       |
 | P06    | Backend: stamp engine                 | ⬜     |        |                                       |
@@ -55,11 +55,12 @@
 
 ## P03 — PKI uji & fixture PDF
 
-- [ ] Konfigurasi certomancer: root, intermediate, signer (valid/kedaluwarsa/belum berlaku/dicabut/tanpa key usage/ECDSA), TSA, OCSP, CRL
-- [ ] Ekspor p12 uji + `make pki`
-- [ ] Fixture pytest: server mock TSA/OCSP/CRL lokal
-- [ ] Generator PDF fixture (Lampiran D) + `make fixtures`
-- [ ] `dev/trust/` berisi root uji untuk pengembangan lokal
+- [x] Konfigurasi certomancer: root, intermediate, signer (valid/kedaluwarsa/belum berlaku/dicabut/tanpa key usage/ECDSA), TSA, OCSP, CRL
+- [x] Ekspor p12 uji + `make pki`
+- [x] Fixture pytest: server mock TSA/OCSP/CRL lokal
+- [x] Generator PDF fixture (Lampiran D) + `make fixtures`
+- [x] `dev/trust/` berisi root uji untuk pengembangan lokal
+- — catatan: certomancer 0.14.x API (`Animator` + `AnimatorArchStore`); `pem.armor()` untuk ekspor PEM; `package_pkcs12(password=)`; raw PDF string manipulation untuk JS injection; Pillow decompression bomb diatasi dgn baca raw PNG header; 50/50 test lulus
 
 ## P04 — Backend: dokumen
 

@@ -47,11 +47,20 @@ build-frontend:
 	cd frontend && npm run build
 
 # ─── PKI & Fixtures ───────────────────────────────────────────────────────────
+PKI_PORT ?= 20888
+
 pki:
-	@echo "PKI fixtures not yet available (P03)"
+	@echo "=== Generating test PKI ==="
+	cd backend && uv run python tests/pki/build_pki.py --port $(PKI_PORT)
+	@echo "=== Copying trust store to dev/trust ==="
+	mkdir -p dev/trust
+	cp backend/tests/pki/out/trust/*.pem dev/trust/
+	@echo "=== PKI generation complete ==="
 
 fixtures:
-	@echo "PDF fixtures not yet available (P03)"
+	@echo "=== Generating test fixtures ==="
+	cd backend && uv run python tests/fixtures/make_fixtures.py
+	@echo "=== Fixture generation complete ==="
 
 # ─── Docker ───────────────────────────────────────────────────────────────────
 docker-build:
