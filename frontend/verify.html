@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="TTE PDF — Verifikasi Tanda Tangan Digital" />
+    <title>Verifikasi — TTE PDF</title>
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
+</head>
+
+<body>
+    <div id="app">
+        <header class="app-header">
+            <h1>TTE PDF</h1>
+            <nav class="app-nav">
+                <span class="step active">Verifikasi Tanda Tangan</span>
+            </nav>
+            <a href="/" class="nav-link">Editor</a>
+        </header>
+        <main id="main-content">
+            <section id="verify-section" class="section">
+                <h2>Verifikasi Tanda Tangan Digital</h2>
+                <p class="section-desc">Unggah PDF untuk memeriksa keabsahan tanda tangan digital.</p>
+                <div id="verify-upload-zone" class="upload-zone">
+                    <p>Tarik PDF ke sini</p>
+                    <input type="file" id="verify-file-input" accept=".pdf,application/pdf" />
+                    <label for="verify-file-input" class="btn btn-primary">Pilih PDF</label>
+                </div>
+                <div id="verify-result"></div>
+            </section>
+        </main>
+        <footer class="app-footer">
+            <p>Dokumen dihapus otomatis setelah 30 menit.</p>
+        </footer>
+    </div>
+    <script type="module" src="/src/verify.js"></script>
+</body>
+
+</html>

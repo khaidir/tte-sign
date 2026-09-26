@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Project data
+.data/
+
+# PKCS#12 (except test fixtures)
+*.p12
+*.pfx
+
+# Test outputs
+backend/tests/pki/out/
+backend/tests/fixtures/out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
