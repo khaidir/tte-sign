@@ -112,7 +112,7 @@ class WorkerPool:
             pass
 
         if loop is not None:
-            fut = loop.run_in_executor(self._executor, fn, *args, **kwargs)
+            fut: Any = loop.run_in_executor(self._executor, fn, *args, **kwargs) # type: ignore
         else:
             from concurrent.futures import Future
 
