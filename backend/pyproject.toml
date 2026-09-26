@@ -10,6 +10,12 @@ dependencies = [
     "pydantic-settings>=2,<3",
     "python-multipart>=0.0.12,<1",
     "orjson>=3.10,<4",
+    "pymupdf>=1.28,<2",
+    "pyhanko[image-support]>=0.37,<1",
+    "pyhanko-certvalidator>=0.26,<1",
+    "cryptography>=50,<51",
+    "pillow>=12,<13",
+    "fonttools>=4.66,<5",
 ]
 
 [dependency-groups]
@@ -21,6 +27,7 @@ dev = [
     "hypothesis>=6,<7",
     "ruff>=0.6,<1",
     "mypy>=1.11,<2",
+    "certomancer>=0.14,<1",
 ]
 
 [tool.ruff]

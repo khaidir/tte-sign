@@ -1,0 +1,11 @@
+pymupdf
+pyhanko[image-support]
+cryptography
+pillow
+lxml
+aiohttp
+fastapi
+uvicorn[standard]
+pydantic
+fonttools
+certomancer

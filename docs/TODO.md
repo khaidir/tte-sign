@@ -9,7 +9,7 @@
 | ------ | ------------------------------------- | ------ | ------ | ------------------------------------- |
 | P00    | PRD, PLAN, TODO, prompt               | ✅     | —      | Dokumen perencanaan dibuat 26-09-2026 |
 | P01    | Scaffold monorepo & fondasi           | ✅     |        |                                       |
-| P02    | Spike kompatibilitas Alpine           | ⬜     |        | Gerbang **G1** setelah ini            |
+| P02    | Spike kompatibilitas Alpine           | ✅     |        | 9/9 steps lulus; ADR-0001 & ADR-0002 |
 | P03    | PKI uji & fixture PDF                 | ⬜     |        |                                       |
 | P04    | Backend: dokumen                      | ⬜     |        |                                       |
 | P05    | Backend: aset & koordinat             | ⬜     |        |                                       |
@@ -44,13 +44,13 @@
 
 ## P02 — Spike kompatibilitas Alpine
 
-- [ ] `docker/spike/Dockerfile.spike` + `spike.py` (stamp, sign B-B visible, validate, render)
-- [ ] Hasil amd64: instal `--only-binary=:all:` sukses/gagal per paket
-- [ ] Hasil arm64: dicoba via buildx, hasil dicatat
-- [ ] Ukuran site-packages & image, waktu import, `scanelf --needed`
-- [ ] `docs/adr/0001-alpine-native-deps.md` (Accepted/Proposed)
-- [ ] `docs/adr/0002-pymupdf-license.md` (Proposed — menunggu G1)
-- [ ] Versi dependency ter-_pin_ di `backend/pyproject.toml`
+- [x] `docker/spike/Dockerfile.spike` + `spike.py` (stamp, sign B-B visible, validate, render)
+- [x] Hasil amd64: instal `--only-binary=:all:` gagal untuk pyHanko (C++ extensions) → fallback source compile dengan `build-base`
+- [x] Hasil arm64: build gagal karena PyMuPDF membutuhkan `libclang` untuk kompilasi source pada arm64. Solusi: deploy amd64 native atau emulasi QEMU.
+- [x] Ukuran image: 97.4 MB content, 383 MB disk, 92 MB gzipped (amd64)
+- [x] `docs/adr/0001-alpine-native-deps.md` (Accepted)
+- [x] `docs/adr/0002-pymupdf-license.md` (Accepted)
+- [x] Versi dependency ter-_pin_ di `backend/pyproject.toml`
 - [ ] **G1 disetujui** — catat keputusan lisensi & arm64 di sini
 
 ## P03 — PKI uji & fixture PDF

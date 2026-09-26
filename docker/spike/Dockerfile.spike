@@ -1,0 +1,58 @@
+# syntax=docker/dockerfile:1
+# P02 — Spike Alpine Compatibility
+# Multi-stage: build wheels, then minimal runtime
+
+# ── Stage 1: Build ────────────────────────────────────────────────────────────
+FROM python:3.13-alpine3.24 AS build
+
+WORKDIR /build
+
+# Install build dependencies for compiling native packages from source
+RUN apk add --no-cache \
+    build-base \
+    libffi-dev \
+    openssl-dev \
+    bzip2-dev \
+    zlib-dev \
+    xz-dev \
+    readline-dev \
+    sqlite-dev \
+    jpeg-dev \
+    freetype-dev \
+    lcms2-dev \
+    openjpeg-dev \
+    tiff-dev \
+    libxml2-dev \
+    libxslt-dev \
+    harfbuzz-dev
+
+COPY requirements-spike.txt .
+
+# Create venv and install all packages (allow source builds)
+RUN python -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/venv/bin/pip install --no-cache-dir -r requirements-spike.txt
+
+# Verify all packages installed
+RUN /opt/venv/bin/pip list --format=columns
+
+# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
+FROM python:3.13-alpine3.24 AS runtime
+
+RUN apk add --no-cache tini libstdc++ libgcc
+
+WORKDIR /app
+
+# Copy venv from build stage
+COPY --from=build /opt/venv /opt/venv
+
+# Copy spike script
+COPY spike.py .
+
+# Set PATH to include venv
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["python", "/app/spike.py"]
