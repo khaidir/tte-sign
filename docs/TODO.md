@@ -24,6 +24,7 @@
 | P14    | Testing & QA                          | ⬜     |        |                                       |
 | P15    | Dokumentasi API & CLI                 | ⬜     |        |                                       |
 | P16    | CI/CD & kesiapan rilis                | ⬜     |        | Gerbang **G3** setelah ini            |
+| P17    | Panduan unit test & assert            | ✅     | —      | Dokumen panduan tetap; PLAN §7a diperbarui |
 
 ---
 

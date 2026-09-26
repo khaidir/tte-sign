@@ -22,6 +22,7 @@ Folder ini berisi **16 prompt bertahap** untuk membangun MVP Mini App TTE PDF de
 | 14  | [14-testing-qa.md](14-testing-qa.md)                                         | M4          | 13         |
 | 15  | [15-api-docs-cli.md](15-api-docs-cli.md)                                     | M4          | 12         |
 | 16  | [16-release-readiness.md](16-release-readiness.md)                           | M4 → **G3** | 13–15      |
+| 17  | [17-unit-test-assert.md](17-unit-test-assert.md)                             | Lintas      | 01         |
 
 ## Cara Menjalankan
 
@@ -39,6 +40,18 @@ Folder ini berisi **16 prompt bertahap** untuk membangun MVP Mini App TTE PDF de
 5. Pada gerbang **G1/G2/G3** (lihat `docs/PLAN.md §9`), hentikan dan lakukan review manusia sebelum lanjut.
 
 **Mode paralel (opsional):** setelah P04, jalur backend (P05 → P08) dan frontend (P09 → P10) dapat dijalankan di dua sesi/worktree terpisah, lalu digabung sebelum P11.
+
+## Panduan Test
+
+**P17** ([17-unit-test-assert.md](17-unit-test-assert.md)) adalah panduan tetap untuk menulis unit test dan assert. Setiap prompt implementasi (P04–P13) **wajib** merujuk P17 saat menulis test. Dokumen ini mencakup:
+
+- Pola assert backend (pytest) dan frontend (vitest).
+- Organisasi file test per prompt.
+- Target cakupan per modul.
+- Aturan khusus untuk test koordinat, PAdES, dan keamanan.
+- Test negatif & boundary.
+
+Bacalah P17 sebelum memulai prompt implementasi apa pun.
 
 ## Struktur Setiap Prompt
 

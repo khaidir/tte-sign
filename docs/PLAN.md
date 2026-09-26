@@ -177,6 +177,296 @@ flowchart LR
 
 ---
 
+## 7a. Strategi Unit Test & Assert
+
+Dokumen ini menjabarkan pola unit test dan assertion yang konsisten di seluruh kodebase. Setiap prompt implementasi (P04–P13) wajib mengikuti strategi ini saat menulis test.
+
+### 7a.1 Prinsip Umum
+
+1. **Test adalah warga negara kelas satu.** Setiap modul baru memiliki file test pendamping. Jangan commit kode tanpa test yang lolos.
+2. **Satu test, satu konsep.** Setiap fungsi test menguji tepat satu perilaku. Nama fungsi test mendeskripsikan perilaku yang diuji, bukan implementasi.
+3. **AAA (Arrange–Act–Assert).** Setiap test mengikuti pola: atur data → lakukan aksi → periksa hasil. Pisahkan dengan baris kosong.
+4. **Jangan test implementasi, test kontrak.** Test harus lolos meskipun implementasi di-refactor, selama kontrak publik tidak berubah.
+5. **Fixtures > setup kustom.** Gunakan fixture pytest untuk data bersama; hindari `conftest.py` yang terlalu gemuk.
+6. **Deterministik.** Test tidak boleh bergantung pada urutan eksekusi, waktu sistem, atau state global. Gunakan `freezegun`/`time_machine` untuk waktu, `unittest.mock` untuk IO.
+
+### 7a.2 Pola Assert Backend (pytest)
+
+#### Assert Dasar
+
+```python
+# Nilai eksak
+assert result.code == "PDF_CORRUPT"
+assert result.status == 422
+
+# Tipe & kontainer
+assert isinstance(result, list)
+assert len(result) == 3
+assert "doc_123" in str(result)
+
+# Pengecualian
+with pytest.raises(AppError) as exc:
+    service.process(None)
+assert exc.value.code == ErrorCode.INVALID_FILE_TYPE
+
+# Float (toleransi)
+assert result.x == pytest.approx(410.46, abs=0.01)
+```
+
+#### Assert Problem Details (RFC 9457)
+
+```python
+def assert_problem_details(resp, *, status, code, detail_contains=None):
+    """Helper untuk memvalidasi respons error RFC 9457."""
+    assert resp.status_code == status
+    body = resp.json()
+    assert body["code"] == code
+    assert body["status"] == status
+    assert "type" in body
+    assert "title" in body
+    assert "instance" in body
+    assert "request_id" in body
+    if detail_contains:
+        assert detail_contains in body["detail"]
+```
+
+#### Assert Audit Chain
+
+```python
+def assert_audit_chain_valid(records):
+    """Verifikasi hash chain audit tidak rusak."""
+    results = AuditLogger().verify_chain(records)
+    assert all(r["_chain_valid"] for r in results)
+```
+
+#### Assert Koordinat (property-based dengan hypothesis)
+
+```python
+from hypothesis import given, strategies as st
+
+@given(
+    page_w=st.floats(min_value=100, max_value=3000),
+    page_h=st.floats(min_value=100, max_value=3000),
+    ratio_x=st.floats(min_value=0, max_value=1),
+    ratio_y=st.floats(min_value=0, max_value=1),
+    rotation=st.sampled_from([0, 90, 180, 270]),
+)
+def test_display_to_pdf_roundtrip(page_w, page_h, ratio_x, ratio_y, rotation):
+    """Konversi display→pdf→display harus mengembalikan nilai awal."""
+    u, v = ratio_x * page_w, ratio_y * page_h
+    x, y = display_to_pdf(u, v, page_w, page_h, rotation)
+    u2, v2 = pdf_to_display(x, y, page_w, page_h, rotation)
+    assert u == pytest.approx(u2, abs=0.01)
+    assert v == pytest.approx(v2, abs=0.01)
+```
+
+#### Assert PAdES Signature
+
+```python
+def assert_signature_valid(sign_result):
+    """Validasi struktur respons SignResult."""
+    assert "document" in sign_result
+    assert sign_result["document"]["kind"] == "signed"
+    assert sign_result["signature"]["field_name"].startswith("Signature")
+    assert sign_result["signature"]["level_applied"] in ("B-B", "B-T", "B-LT", "B-LTA")
+    assert sign_result["signature"]["digest_algorithm"] == "sha256"
+    assert "signer" in sign_result["signature"]
+    assert "common_name" in sign_result["signature"]["signer"]
+```
+
+#### Assert Verification Report
+
+```python
+def assert_verification_passed(report):
+    """Validasi laporan verifikasi untuk tanda tangan yang valid."""
+    assert report["summary"]["status"] == "VALID"
+    assert report["summary"]["signature_count"] >= 1
+    for sig in report["signatures"]:
+        assert sig["indication"] == "TOTAL_PASSED"
+        assert sig["integrity"]["intact"] is True
+        assert sig["integrity"]["valid"] is True
+        assert sig["trust"]["trusted"] is True
+```
+
+#### Assert Tidak Bocor Rahasia
+
+```python
+def assert_no_secrets_in_log(caplog, forbidden=None):
+    """Pastikan log tidak mengandung string terlarang."""
+    forbidden = forbidden or ["passphrase", "pkcs12", "private_key"]
+    for record in caplog.records:
+        msg = record.getMessage().lower()
+        for secret in forbidden:
+            assert secret not in msg, f"Secret '{secret}' leaked in log: {record.getMessage()}"
+```
+
+### 7a.3 Pola Assert Frontend (vitest)
+
+#### Assert Dasar
+
+```javascript
+import { describe, it, expect } from "vitest";
+
+expect(result).toBe(42);
+expect(result).toBeTypeOf("number");
+expect(array).toHaveLength(3);
+expect(obj).toHaveProperty("key");
+expect(obj.key).toBe("value");
+```
+
+#### Assert Koordinat (paritas FE/BE)
+
+```javascript
+import { displayToPdf, pdfToDisplay } from "../coords.js";
+
+// Test vector dari shared/test-vectors/coords.json
+const vectors = [
+  { pageW: 595.28, pageH: 841.89, u: 410.46, v: 36, rotation: 0, expectedX: 410.46, expectedY: 805.89 },
+  // ...
+];
+
+describe.each(vectors)("coords parity", (v) => {
+  it(`rotation ${v.rotation}: display→pdf`, () => {
+    const [x, y] = displayToPdf(v.u, v.v, v.pageW, v.pageH, v.rotation);
+    expect(x).toBeCloseTo(v.expectedX, 2);
+    expect(y).toBeCloseTo(v.expectedY, 2);
+  });
+});
+```
+
+#### Assert API Client (mock fetch/ky)
+
+```javascript
+import { ApiClient } from "../api/client.js";
+
+describe("ApiClient", () => {
+  it("handles problem details error", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        code: "PDF_CORRUPT",
+        title: "Berkas PDF rusak",
+        status: 422,
+      }), { status: 422, headers: { "Content-Type": "application/problem+json" } })
+    );
+    const client = new ApiClient("http://localhost", { fetch: mockFetch });
+    await expect(client.request("/documents")).rejects.toThrow("PDF_CORRUPT");
+  });
+});
+```
+
+#### Assert UI State
+
+```javascript
+import { createStore } from "../state/store.js";
+
+it("updates placement on drag", () => {
+  const store = createStore();
+  store.setPlacement({ page: 0, x: 0.5, y: 0.5, w: 0.25, h: 0.1 });
+  expect(store.getState().placement).toMatchObject({
+    page: 0,
+    x: expect.closeTo(0.5, 4),
+    y: expect.closeTo(0.5, 4),
+  });
+});
+```
+
+### 7a.4 Organisasi File Test
+
+```
+backend/tests/
+├── conftest.py              # fixture global (app, client, settings override)
+├── unit/
+│   ├── conftest.py          # fixture khusus unit
+│   ├── test_coords.py       # hypothesis property-based
+│   ├── test_errors.py       # error mapping & RFC 9457
+│   ├── test_audit.py        # hash chain
+│   ├── test_ids.py          # generator ID
+│   ├── test_config.py       # validasi settings
+│   ├── test_storage.py      # CRUD + TTL
+│   ├── test_worker_pool.py  # pool lifecycle
+│   ├── test_asset_service.py
+│   ├── test_text_renderer.py
+│   ├── test_stamp_engine.py
+│   ├── test_pades_signer.py
+│   ├── test_pades_verifier.py
+│   ├── test_trust_store.py
+│   ├── test_security.py     # auth, rate limit
+│   └── test_janitor.py
+├── integration/
+│   ├── conftest.py          # fixture integrasi (mock TSA/OCSP, client)
+│   ├── test_documents.py    # CRUD endpoint
+│   ├── test_assets.py       # upload, text render
+│   ├── test_stamp.py        # stamp endpoint + visual
+│   ├── test_pades_sign.py   # semua level + error
+│   ├── test_pades_verify.py # korpus verifikasi
+│   └── test_auth.py         # API key + scope
+├── visual/
+│   ├── conftest.py          # fixture render + deteksi bounding box
+│   └── test_position.py     # matriks rotasi × CropBox × ukuran kertas
+├── pki/                     # certomancer config (P03)
+└── fixtures/                # generator PDF (P03)
+
+frontend/tests/
+├── coords.test.js           # paritas FE/BE
+├── api.test.js              # ApiClient mock
+├── store.test.js            # state management
+├── validation.test.js       # validasi form
+└── i18n.test.js             # kamus string
+```
+
+### 7a.5 Konvensi Penamaan
+
+| Elemen              | Konvensi                                                          | Contoh                                               |
+| ------------------- | ----------------------------------------------------------------- | ---------------------------------------------------- |
+| File test           | `test_<modul>.py` / `<modul>.test.js`                            | `test_coords.py`, `api.test.js`                      |
+| Kelas test          | `Test<Fungsi>` (pytest) / `describe("<fungsi>")` (vitest)        | `TestDisplayToPdf`, `describe("ApiClient")`          |
+| Fungsi test         | `test_<perilaku>` / `it("<perilaku>")`                           | `test_roundtrip`, `it("handles network error")`      |
+| Fixture             | `<nama_bersih>`                                                   | `app`, `client`, `sample_pdf`, `valid_p12`           |
+| Helper assert       | `assert_<konsep>`                                                 | `assert_problem_details`, `assert_signature_valid`   |
+| Data uji            | `<deskripsi>_<varian>`                                            | `a4_portrait`, `rotated_90`, `corrupt_truncated`     |
+| Mock                | `mock_<service>`                                                  | `mock_tsa`, `mock_storage`                           |
+| Test vector JSON    | `shared/test-vectors/<domain>.json`                               | `coords.json`, `pades_levels.json`                   |
+
+### 7a.6 Cakupan & Gerbang
+
+| Modul                        | Target Cakupan | Metode Pengukuran         |
+| ---------------------------- | -------------- | ------------------------- |
+| `app/domain/coords.py`       | ≥ 95%          | `pytest --cov`            |
+| `app/services/stamp_engine`  | ≥ 90%          | `pytest --cov`            |
+| `app/services/pades_signer`  | ≥ 85%          | `pytest --cov`            |
+| `app/services/pades_verifier`| ≥ 85%          | `pytest --cov`            |
+| `app/core/errors.py`         | ≥ 95%          | `pytest --cov`            |
+| `app/core/audit.py`          | ≥ 95%          | `pytest --cov`            |
+| `app/core/security.py`       | ≥ 90%          | `pytest --cov`            |
+| Modul backend lainnya        | ≥ 75%          | `pytest --cov`            |
+| `frontend/src/coords.js`     | ≥ 90%          | `vitest --coverage`       |
+| `frontend/src/api/client.js` | ≥ 80%          | `vitest --coverage`       |
+| `frontend/src/state/store.js`| ≥ 80%          | `vitest --coverage`       |
+| Modul frontend lainnya       | ≥ 70%          | `vitest --coverage`       |
+
+Gerbang CI: `pytest --cov-fail-under=75` (backend) dan `vitest --coverage` dengan threshold (frontend). Modul inti memiliki threshold lebih tinggi via laporan per-file.
+
+### 7a.7 Test Negatif & Boundary
+
+Setiap modul wajib memiliki test untuk:
+
+1. **Input tidak valid:** `None`, string kosong, tipe salah, nilai di luar rentang.
+2. **Batas (boundary):** nilai minimum, maksimum, tepat di batas, tepat di luar batas.
+3. **Keadaan kosong:** list kosong, dict kosong, string kosong, file 0 byte.
+4. **Error propagation:** pastikan error dari dependency (IOError, TimeoutError) diterjemahkan ke `AppError` yang sesuai, bukan `500 INTERNAL_ERROR`.
+5. **Idempotensi:** operasi yang sama dua kali memberikan hasil yang sama (atau error yang konsisten).
+6. **Konkurensi (backend):** akses simultan ke resource bersama tidak menyebabkan race condition (pytest-asyncio + `asyncio.gather`).
+
+### 7a.8 Test PAdES — Aturan Khusus
+
+1. **Setiap test PAdES** harus memverifikasi bahwa passphrase, PKCS#12, dan kunci privat **tidak muncul** di log, audit, atau respons error. Gunakan fixture `caplog` dan helper `assert_no_secrets_in_log`.
+2. **Test B-T/B-LT** membutuhkan mock TSA/OCSP. Gunakan fixture certomancer dari P03. Jangan panggil TSA/OCSP nyata di test.
+3. **Test B-LTA** (Should) cukup satu skenario happy path; kegagalan document timestamp tidak memblokir rilis.
+4. **Korpus verifikasi** (P08) harus mencakup: valid, dimodifikasi, byte rusak, sertifikat dicabut, sertifikat kedaluwarsa, root tidak dipercaya, multi-tanda tangan, dokumen tanpa tanda tangan.
+5. **Validasi silang:** setiap dokumen PAdES hasil test harus lolos `pyhanko sign validate` (dijalankan di test integrasi atau skrip terpisah).
+
+---
+
 ## 8. Prasyarat Lingkungan
 
 | Alat                 | Versi minimum     | Catatan                                                                   |
